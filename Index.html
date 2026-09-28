@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Showtime – Movie tickets</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#eaf1f0;--panel:#fff;--ink:#0e2a30;--mute:#4d6b70;--acc:#f2a516;--onacc:#0e2a30;--free:#c3dadd;--taken:#8ea5a9;--line:#c9dadc;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e2a30;--panel:#153a42;--ink:#f4efe4;--mute:#9db8bb;--free:#2f6670;--taken:#0b1f24;--line:#2a5560}}
+:root[data-theme="dark"]{--bg:#0e2a30;--panel:#153a42;--ink:#f4efe4;--mute:#9db8bb;--free:#2f6670;--taken:#0b1f24;--line:#2a5560}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Bricolage Grotesque",system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.45}
+main{max-width:720px;margin:0 auto;padding:20px 16px 40px}
+h1{font-size:2rem;font-weight:800;letter-spacing:-.02em;margin:0 0 4px}
+h2{font-size:1.25rem;margin:0 0 12px}
+p{margin:0}.mute{color:var(--mute)}
+button{font:inherit;cursor:pointer}
+button:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+.btn{background:var(--acc);color:var(--onacc);border:0;border-radius:999px;padding:14px 22px;font-weight:800;width:100%}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.ghost{background:none;color:var(--ink);border:2px solid var(--line);border-radius:999px;padding:12px 22px;font-weight:600;width:100%}
+.back{background:none;border:0;color:var(--mute);padding:0 0 12px;font-weight:600}
+.movies{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:16px;margin-top:20px}
+.movie{background:none;border:0;padding:0;text-align:left;color:inherit}
+.poster{aspect-ratio:2/3;border-radius:10px;display:flex;align-items:flex-end;padding:12px;font-weight:800;font-size:1.25rem;line-height:1.1;color:#fff;letter-spacing:-.01em;transition:transform .15s}
+.poster small{display:block;font-weight:600;font-size:.7em;opacity:.85;margin-top:4px}
+.movie:hover .poster{transform:translateY(-3px)}
+.movie b{display:block;margin-top:8px}
+.head{display:flex;gap:14px;align-items:center;margin-bottom:18px}
+.head .poster{width:84px;flex:none;font-size:.8rem;padding:8px}
+.dates{display:flex;gap:8px;margin-bottom:18px;overflow-x:auto}
+.chip{border:2px solid var(--line);background:var(--panel);color:var(--ink);border-radius:12px;padding:8px 14px;white-space:nowrap;font-weight:600}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.theatre{background:var(--panel);border-radius:14px;padding:14px;margin-bottom:12px}
+.times{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.time{border:2px solid var(--acc);background:none;color:var(--ink);border-radius:10px;padding:8px 14px;font-weight:600}
+.time:hover{background:var(--acc);color:var(--onacc)}
+.screen{height:6px;border-radius:6px;background:var(--acc);margin:6px 14% 4px;box-shadow:0 8px 24px var(--acc)}
+.screenlbl{text-align:center;font-size:.85rem;margin-bottom:18px}
+.seats{overflow-x:auto;padding-bottom:6px}
+.row{display:flex;gap:6px;justify-content:center;align-items:center;margin-bottom:6px}
+.row i{width:18px;font-style:normal;color:var(--mute);font-size:.85rem}
+.seat{width:34px;height:32px;border:0;border-radius:8px 8px 4px 4px;background:var(--free)}
+.seat[aria-pressed="true"]{background:var(--acc)}
+.seat:disabled{background:var(--taken);cursor:not-allowed;opacity:.7}
+.gap{width:16px}
+.legend{display:flex;gap:16px;justify-content:center;font-size:.85rem;margin:14px 0}
+.legend span::before{content:"";display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:6px;background:var(--c);vertical-align:-1px}
+.bar{position:sticky;bottom:0;background:var(--bg);padding:12px 0;border-top:1px solid var(--line);margin-top:12px}
+.bar .sum{display:flex;justify-content:space-between;margin-bottom:10px;font-weight:600}
+.ticket{background:var(--panel);border-radius:16px;overflow:hidden;position:relative;margin:16px 0 20px}
+.ticket .top{padding:20px}
+.ticket .stub{border-top:2px dashed var(--line);padding:16px 20px;display:flex;justify-content:space-between;align-items:center}
+.ticket::before,.ticket::after{content:"";position:absolute;top:calc(100% - 66px);width:22px;height:22px;border-radius:50%;background:var(--bg)}
+.ticket::before{left:-11px}.ticket::after{right:-11px}
+.ticket dl{display:grid;grid-template-columns:auto 1fr;gap:6px 16px;margin:14px 0 0}
+.ticket dt{color:var(--mute)}.ticket dd{margin:0;font-weight:600}
+.ok{display:inline-block;background:var(--acc);color:var(--onacc);border-radius:999px;padding:4px 12px;font-weight:800;font-size:.85rem;margin-bottom:10px}
+.id{font-size:1.4rem;font-weight:800;letter-spacing:.06em}
+.note{text-align:center;margin-top:14px;font-weight:600}
+.stack{display:grid;gap:10px}
+.upi{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.upiapp{display:flex;align-items:center;gap:10px;background:var(--panel);color:var(--ink);border:2px solid var(--line);border-radius:12px;padding:14px;font-weight:600;text-align:left}
+.upiapp[aria-checked="true"]{border-color:var(--acc);box-shadow:inset 0 0 0 1px var(--acc)}
+.upiapp i{width:14px;height:14px;border-radius:50%;background:var(--c);flex:none}
+.or{text-align:center;margin:16px 0 10px}
+input{font:inherit;width:100%;padding:14px;border-radius:12px;border:2px solid var(--line);background:var(--panel);color:var(--ink)}
+input:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tabs{margin-bottom:16px}
+#err{color:#d62839;font-weight:600;min-height:1.4em;margin-top:6px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style></head>
+<body><main id="app"></main>
+<script>
+const MOVIES=[
+ {id:7,l:"Telugu",t:"Irumudi",g:"Telugu",c:"linear-gradient(160deg,#5a189a,#ff9e00)"},
+ {id:8,l:"Telugu",t:"Kharmakhya",g:"Telugu",c:"linear-gradient(160deg,#1b4332,#d4a017)"},
+ {id:9,l:"Telugu",t:"Modha Rathiri",g:"Telugu",c:"linear-gradient(160deg,#0b132b,#5bc0be)"},
+ {id:10,l:"Telugu",t:"Animal",g:"Telugu",c:"linear-gradient(160deg,#3c0a0a,#d00000)"},
+ {id:11,l:"Telugu",t:"Raja Saab",g:"Telugu",c:"linear-gradient(160deg,#590d22,#f4a261)"},
+ {id:12,l:"Telugu",t:"Little Hearts",g:"Telugu",c:"linear-gradient(160deg,#9d0208,#ffb3c6)"}
+];
+const langLine=()=>"Telugu";
+const THEATRES=[
+ {n:"Galaxy Cinemas, City Centre",t:["10:30 AM","1:45 PM","6:15 PM"]},
+ {n:"PVR Skyline",t:["11:15 AM","4:00 PM","9:30 PM"]},
+ {n:"Regal Talkies",t:["12:00 PM","3:20 PM","8:10 PM"]}
+];
+const ROWS="ABCDEF".split(""),COLS=8,PRICE=r=>r<2?300:200;
+const S={screen:"movies",movie:null,dayIdx:0,theatre:null,time:null,sel:[],booking:null};
+const app=document.getElementById("app"),$=id=>document.getElementById(id);
+
+function days(){return [0,1,2].map(i=>{const d=new Date();d.setDate(d.getDate()+i);return{key:d.toDateString(),label:i===0?"Today":d.toLocaleDateString(undefined,{weekday:"short",day:"numeric",month:"short"})}})}
+function showKey(){return [S.movie.id,days()[S.dayIdx].key,S.theatre,S.time].join("|")}
+function hash(s){let h=7;for(const c of s)h=(h*31+c.charCodeAt(0))>>>0;return h}
+function stored(){try{return JSON.parse(localStorage.getItem("bookings")||"{}")}catch(e){return{}}}
+function takenSeats(){
+  const k=showKey(),set=new Set(),h=hash(k);
+  for(let r=0;r<ROWS.length;r++)for(let c=0;c<COLS;c++)if(((h>>>((r*COLS+c)%24))+r*7+c*13+h)%5===0)set.add(ROWS[r]+(c+1));
+  (stored()[k]||[]).forEach(x=>set.add(x));return set;
+}
+function go(screen){S.screen=screen;render();window.scrollTo(0,0)}
+function poster(m,cls=""){return `<div class="poster ${cls}" style="background:${m.c}"><span>${m.t}${m.k?`<small>${m.k}</small>`:""}</span></div>`}
+
+function render(){
+  if(S.screen==="movies"){
+    const list=MOVIES;
+    app.innerHTML=`<h1>Showtime</h1><p class="mute">Telugu movies now showing</p>
+    <div class="movies">${list.map(m=>`<button class="movie" data-m="${m.id}">${poster(m)}<b>${m.t}</b><span class="mute">${m.g}</span></button>`).join("")}</div>`;
+    app.querySelectorAll("[data-m]").forEach(b=>b.onclick=()=>{S.movie=MOVIES.find(m=>m.id==b.dataset.m);S.dayIdx=0;go("shows")});
+  }
+  else if(S.screen==="shows"){
+    app.innerHTML=`<button class="back" id="back">‹ All movies</button>
+    <div class="head">${poster(S.movie)}<div><h2 style="margin:0">${S.movie.t}</h2><p class="mute">${S.movie.g}</p></div></div>
+    <div class="dates">${days().map((d,i)=>`<button class="chip" data-d="${i}" aria-pressed="${i===S.dayIdx}">${d.label}</button>`).join("")}</div>
+    ${THEATRES.map((t,i)=>`<div class="theatre"><b>${t.n}</b><div class="times">${t.t.map(x=>`<button class="time" data-t="${i}" data-x="${x}">${x}</button>`).join("")}</div></div>`).join("")}`;
+    $("back").onclick=()=>go("movies");
+    app.querySelectorAll("[data-d]").forEach(b=>b.onclick=()=>{S.dayIdx=+b.dataset.d;render()});
+    app.querySelectorAll(".time").forEach(b=>b.onclick=()=>{S.theatre=THEATRES[b.dataset.t].n;S.time=b.dataset.x;S.sel=[];go("seats")});
+  }
+  else if(S.screen==="seats"){
+    const taken=takenSeats();
+    app.innerHTML=`<button class="back" id="back">‹ Showtimes</button>
+    <h2>${S.movie.t}</h2><p class="mute" style="margin-bottom:18px">${S.theatre} · ${days()[S.dayIdx].label}, ${S.time}</p>
+    <div class="screen"></div><p class="screenlbl mute">Screen this way</p>
+    <div class="seats">${ROWS.map((r,ri)=>`<div class="row"><i>${r}</i>${Array.from({length:COLS},(_,c)=>{const id=r+(c+1);return (c===COLS/2?'<span class="gap"></span>':'')+`<button class="seat" data-s="${id}" data-r="${ri}" aria-label="Seat ${id}, ₹${PRICE(ri)}" aria-pressed="${S.sel.includes(id)}" ${taken.has(id)?"disabled":""}></button>`}).join("")}</div>`).join("")}</div>
+    <div class="legend"><span style="--c:var(--free)">Available</span><span style="--c:var(--acc)">Selected</span><span style="--c:var(--taken)">Sold</span></div>
+    <p class="mute" style="text-align:center;font-size:.85rem">Rows A–B ₹300 · Rows C–F ₹200 · Max 6 seats</p>
+    <div class="bar"><div class="sum"><span id="cnt"></span><span id="tot"></span></div><button class="btn" id="pay" disabled>Confirm booking</button></div>`;
+    $("back").onclick=()=>go("shows");
+    const upd=()=>{const sum=S.sel.reduce((a,s)=>a+PRICE(ROWS.indexOf(s[0])),0);
+      $("cnt").textContent=S.sel.length?S.sel.join(", "):"Pick your seats";$("tot").textContent=S.sel.length?"₹"+sum:"";$("pay").disabled=!S.sel.length;
+      $("pay").textContent=S.sel.length?`Confirm booking · ₹${sum}`:"Confirm booking";return sum};
+    app.querySelectorAll(".seat").forEach(b=>b.onclick=()=>{const id=b.dataset.s,i=S.sel.indexOf(id);
+      if(i>-1)S.sel.splice(i,1);else if(S.sel.length<6)S.sel.push(id);else return;
+      b.setAttribute("aria-pressed",S.sel.includes(id));upd()});
+    upd();
+    $("pay").onclick=()=>{S.total=upd();S.method="";S.tab="UPI";go("pay")};
+  }
+  else if(S.screen==="pay"){
+    const tab=S.tab||"UPI";
+    const apps=[["Google Pay","#4285f4"],["PhonePe","#5f259f"],["Paytm","#00b9f1"],["BHIM","#f68b1f"]];
+    const banks=[["SBI","#1c4e9d"],["HDFC Bank","#004c8f"],["ICICI Bank","#f37021"],["Axis Bank","#97144d"]];
+    const seats=[...S.sel].sort().join(", ");
+    const opts=(list,label)=>`<div class="upi" role="radiogroup" aria-label="${label}">${list.map(a=>`<button class="upiapp" role="radio" aria-checked="false" data-a="${a[0]}"><i style="--c:${a[1]}"></i>${a[0]}</button>`).join("")}</div>`;
+    const body=tab==="UPI"?opts(apps,"UPI app")+`<p class="or mute">or pay using a UPI ID</p><input id="vpa" placeholder="yourname@okbank" autocomplete="off" autocapitalize="none" spellcheck="false" aria-label="UPI ID">`
+      :tab==="Card"?`<div class="stack"><input id="cname" placeholder="Name on card" autocomplete="cc-name" aria-label="Name on card"><input id="cnum" inputmode="numeric" placeholder="Card number" autocomplete="cc-number" maxlength="19" aria-label="Card number"><div class="two"><input id="cexp" inputmode="numeric" placeholder="MM/YY" autocomplete="cc-exp" maxlength="5" aria-label="Expiry"><input id="ccvv" type="password" inputmode="numeric" placeholder="CVV" autocomplete="cc-csc" maxlength="3" aria-label="CVV"></div></div><p class="mute" style="margin-top:10px;font-size:.85rem">Demo only. Don't enter real card details.</p>`
+      :opts(banks,"Bank");
+    app.innerHTML=`<button class="back" id="back">‹ Change seats</button>
+    <h2>Payment</h2><p class="mute" style="margin-bottom:16px">${S.movie.t} · ${seats} · ${S.time}</p>
+    <div class="dates tabs">${[["UPI","UPI"],["Card","Debit / credit card"],["Net banking","Net banking"]].map(t=>`<button class="chip" data-tab="${t[0]}" aria-pressed="${t[0]===tab}">${t[1]}</button>`).join("")}</div>
+    ${body}<p id="err" role="alert"></p>
+    <div class="bar"><div class="sum"><span>Total</span><span>₹${S.total}</span></div><button class="btn" id="paynow">Pay ₹${S.total}</button></div>`;
+    $("back").onclick=()=>go("seats");
+    app.querySelectorAll("[data-tab]").forEach(b=>b.onclick=()=>{S.tab=b.dataset.tab;S.method="";render()});
+    const btns=app.querySelectorAll(".upiapp");
+    btns.forEach(b=>b.onclick=()=>{btns.forEach(x=>x.setAttribute("aria-checked",x===b));S.method=b.dataset.a;if($("vpa"))$("vpa").value="";$("err").textContent=""});
+    if($("vpa"))$("vpa").oninput=()=>{btns.forEach(x=>x.setAttribute("aria-checked","false"));S.method="";$("err").textContent=""};
+    if($("cnum"))$("cnum").oninput=e=>{e.target.value=e.target.value.replace(/\D/g,"").slice(0,16).replace(/(.{4})/g,"$1 ").trim()};
+    if($("cexp"))$("cexp").oninput=e=>{let v=e.target.value.replace(/\D/g,"").slice(0,4);e.target.value=v.length>2?v.slice(0,2)+"/"+v.slice(2):v};
+    const luhn=n=>{let t=0,d=false;for(let i=n.length-1;i>=0;i--){let x=+n[i];if(d){x*=2;if(x>9)x-=9}t+=x;d=!d}return t%10===0};
+    const fail=m=>{$("err").textContent=m};
+    $("paynow").onclick=()=>{
+      let method=S.method;
+      if(tab==="UPI"&&!method){
+        const vpa=$("vpa").value.trim();
+        if(!vpa)return fail("Choose a UPI app or enter your UPI ID.");
+        if(!/^[\w.\-]{2,}@[a-zA-Z]{2,}$/.test(vpa))return fail("Enter a valid UPI ID, like name@okbank.");
+        method="UPI ID "+vpa;
+      }else if(tab==="Card"){
+        const n=$("cnum").value.replace(/\s/g,""),ex=$("cexp").value,cv=$("ccvv").value,nm=$("cname").value.trim();
+        if(!nm)return fail("Enter the name on the card.");
+        if(!/^\d{16}$/.test(n)||!luhn(n))return fail("Enter a valid 16-digit card number.");
+        const m=ex.match(/^(0[1-9]|1[0-2])\/(\d{2})$/);
+        if(!m||new Date(2000+ +m[2],+m[1],1)<=new Date())return fail("Enter a valid, unexpired date as MM/YY.");
+        if(!/^\d{3}$/.test(cv))return fail("Enter the 3-digit CVV.");
+        method="Card ending "+n.slice(-4);
+      }else if(tab==="Net banking"){
+        if(!method)return fail("Choose your bank.");
+        method="Net banking – "+method;
+      }
+      $("paynow").disabled=true;$("paynow").textContent="Processing payment…";
+      setTimeout(()=>{
+        const k=showKey(),all=stored();
+        all[k]=(all[k]||[]).concat(S.sel);try{localStorage.setItem("bookings",JSON.stringify(all))}catch(e){}
+        S.booking={id:"BK"+Math.random().toString(36).slice(2,8).toUpperCase(),seats:[...S.sel].sort(),total:S.total,date:days()[S.dayIdx].label,method};
+        go("done");
+      },1800);
+    };
+  }
+  else if(S.screen==="done"){
+    const b=S.booking;
+    app.innerHTML=`<div class="ticket"><div class="top"><span class="ok">Booking confirmed</span>
+      <h2 style="margin:0">${S.movie.t}</h2>
+      <dl><dt>Language</dt><dd>${langLine(S.movie)}</dd><dt>Theatre</dt><dd>${S.theatre}</dd><dt>When</dt><dd>${b.date}, ${S.time}</dd><dt>Seats</dt><dd>${b.seats.join(", ")}</dd><dt>Paid</dt><dd>₹${b.total}</dd><dt>Paid via</dt><dd>${b.method}</dd></dl></div>
+      <div class="stub"><span class="mute">Booking ID</span><span class="id">${b.id}</span></div></div>
+    <div class="stack"><button class="btn" id="close">Close window</button><button class="ghost" id="again">Book another movie</button></div>
+    <p class="note" id="msg" role="status"></p>`;
+    $("again").onclick=()=>{S.sel=[];go("movies")};
+    $("close").onclick=()=>{
+      window.close();
+      setTimeout(()=>{$("msg").textContent="Your browser kept this tab open. You can close it now; your booking is saved.";$("close").disabled=true},300);
+    };
+  }
+}
+render();
+</script></body></html>
